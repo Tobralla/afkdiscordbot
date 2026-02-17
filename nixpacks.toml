@@ -2,7 +2,7 @@
 nixPkgs = ["nodejs_18", "gcc", "cmake", "python3", "gnumake"]
 
 [phases.build]
-cmds = ["npm ci --build-from-source"]
+cmds = ["npm install --build-from-source"]
 
 [start]
 cmd = "node server.js"
