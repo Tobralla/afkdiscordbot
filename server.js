@@ -27,7 +27,7 @@ const DISCORD_ENABLED = !!DISCORD_TOKEN;
 //  Express
 // ─────────────────────────────────────────────
 const app  = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
