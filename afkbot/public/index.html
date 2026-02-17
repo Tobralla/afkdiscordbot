@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DonutSMP Bot Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Orbitron:wght@500;700;900&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg:        #060608;
+      --surface:   #0d0d12;
+      --border:    #1a1a26;
+      --border2:   #252535;
+      --green:     #00ff87;
+      --green2:    #00cc6a;
+      --green-dim: rgba(0,255,135,.08);
+      --green-glow:rgba(0,255,135,.25);
+      --amber:     #ffb830;
+      --red:       #ff4560;
+      --blue:      #00c6ff;
+      --text:      #c8cfe8;
+      --text-dim:  #5a5f7a;
+      --text-muted:#3a3d52;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.6;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* subtle grid background */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(0,255,135,.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0,255,135,.025) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    /* scanline overlay */
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,.06) 2px,
+        rgba(0,0,0,.06) 4px
+      );
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 24px 20px 60px;
+    }
+
+    /* ── Header ── */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 0 28px;
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 28px;
+    }
+
+    .header-left { display: flex; align-items: center; gap: 14px; }
+
+    .logo {
+      font-family: 'Orbitron', sans-serif;
+      font-size: 20px;
+      font-weight: 900;
+      color: var(--green);
+      text-shadow: 0 0 20px var(--green-glow);
+      letter-spacing: 2px;
+    }
+
+    .logo span { color: var(--text-dim); font-weight: 500; }
+
+    .server-tag {
+      background: var(--green-dim);
+      border: 1px solid rgba(0,255,135,.2);
+      color: var(--green);
+      padding: 3px 10px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      border-radius: 3px;
+    }
+
+    .version-tag {
+      font-size: 11px;
+      color: var(--text-dim);
+      letter-spacing: .5px;
+    }
+
+    /* ── Connect Bar ── */
+    .connect-bar {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 24px;
+      align-items: center;
+    }
+
+    .connect-bar input {
+      flex: 1;
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: inherit;
+      font-size: 13px;
+      padding: 10px 14px;
+      border-radius: 5px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .connect-bar input:focus {
+      border-color: var(--green);
+      box-shadow: 0 0 0 2px var(--green-dim);
+    }
+    .connect-bar input::placeholder { color: var(--text-muted); }
+
+    /* ── Buttons ── */
+    .btn {
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 1px;
+      padding: 10px 18px;
+      border-radius: 5px;
+      border: 1px solid transparent;
+      cursor: pointer;
+      transition: all .15s;
+      white-space: nowrap;
+      text-transform: uppercase;
+      display: inline-flex; align-items: center; gap: 6px;
+    }
+
+    .btn-green {
+      background: var(--green);
+      color: #000;
+      border-color: var(--green);
+    }
+    .btn-green:hover {
+      background: #fff;
+      box-shadow: 0 0 16px var(--green-glow);
+    }
+
+    .btn-red {
+      background: transparent;
+      color: var(--red);
+      border-color: var(--red);
+    }
+    .btn-red:hover {
+      background: rgba(255,69,96,.12);
+      box-shadow: 0 0 12px rgba(255,69,96,.25);
+    }
+
+    .btn-amber {
+      background: transparent;
+      color: var(--amber);
+      border-color: var(--amber);
+    }
+    .btn-amber:hover {
+      background: rgba(255,184,48,.1);
+      box-shadow: 0 0 12px rgba(255,184,48,.22);
+    }
+
+    .btn-blue {
+      background: transparent;
+      color: var(--blue);
+      border-color: var(--blue);
+    }
+    .btn-blue:hover {
+      background: rgba(0,198,255,.1);
+      box-shadow: 0 0 12px rgba(0,198,255,.22);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--text-dim);
+      border-color: var(--border2);
+    }
+    .btn-ghost:hover { border-color: var(--text-dim); color: var(--text); }
+
+    .btn:disabled { opacity: .35; cursor: not-allowed; }
+
+    /* ── Session cards container ── */
+    .sessions { display: flex; flex-direction: column; gap: 20px; }
+
+    .empty-state {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+      border: 1px dashed var(--border2);
+      border-radius: 8px;
+    }
+    .empty-state .icon { font-size: 36px; margin-bottom: 12px; }
+    .empty-state p { font-size: 13px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-radius: 8px;
+      overflow: hidden;
+      animation: slideIn .25s ease;
+    }
+
+    @keyframes slideIn {
+      from { opacity:0; transform:translateY(10px); }
+      to   { opacity:1; transform:translateY(0); }
+    }
+
+    .card-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,.3);
+    }
+
+    .card-title {
+      display: flex; align-items: center; gap: 10px;
+    }
+
+    .status-dot {
+      width: 9px; height: 9px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    .status-dot.online  { background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+    .status-dot.offline { background: var(--text-muted); }
+    .status-dot.connecting { background: var(--amber); box-shadow: 0 0 8px var(--amber); animation: pulse 1s infinite; }
+    .status-dot.error   { background: var(--red); box-shadow: 0 0 8px var(--red); }
+    .status-dot.auth    { background: var(--blue); box-shadow: 0 0 8px var(--blue); animation: pulse .8s infinite; }
+
+    @keyframes pulse {
+      0%,100% { opacity:1; }
+      50%      { opacity:.4; }
+    }
+
+    .account-name {
+      font-size: 14px; font-weight: 700;
+      color: var(--text);
+    }
+
+    .status-badge {
+      font-size: 10px; font-weight: 700; letter-spacing: 1.5px;
+      padding: 2px 8px; border-radius: 20px;
+      text-transform: uppercase;
+    }
+    .badge-online     { color: var(--green); background: rgba(0,255,135,.1); border:1px solid rgba(0,255,135,.25); }
+    .badge-offline    { color: var(--text-dim); background: rgba(255,255,255,.04); border:1px solid var(--border); }
+    .badge-connecting { color: var(--amber); background: rgba(255,184,48,.1); border:1px solid rgba(255,184,48,.25); }
+    .badge-error      { color: var(--red); background: rgba(255,69,96,.1); border:1px solid rgba(255,69,96,.25); }
+    .badge-auth       { color: var(--blue); background: rgba(0,198,255,.1); border:1px solid rgba(0,198,255,.25); }
+
+    .card-header-right { display: flex; align-items: center; gap: 8px; }
+
+    .reconnect-toggle {
+      display: flex; align-items: center; gap: 7px;
+      cursor: pointer;
+      font-size: 11px;
+      color: var(--text-dim);
+      user-select: none;
+    }
+    .reconnect-toggle input { display: none; }
+    .toggle-track {
+      width: 32px; height: 16px;
+      background: var(--border2);
+      border-radius: 20px;
+      position: relative;
+      transition: background .2s;
+    }
+    .toggle-track::after {
+      content: '';
+      position: absolute;
+      top: 2px; left: 2px;
+      width: 12px; height: 12px;
+      background: var(--text-dim);
+      border-radius: 50%;
+      transition: all .2s;
+    }
+    .reconnect-toggle input:checked + .toggle-track {
+      background: rgba(0,255,135,.3);
+    }
+    .reconnect-toggle input:checked + .toggle-track::after {
+      transform: translateX(16px);
+      background: var(--green);
+      box-shadow: 0 0 6px var(--green);
+    }
+
+    /* ── Auth panel ── */
+    .auth-panel {
+      margin: 14px 18px;
+      border: 1px solid rgba(0,198,255,.3);
+      background: rgba(0,198,255,.05);
+      border-radius: 6px;
+      padding: 14px 16px;
+      display: none;
+    }
+    .auth-panel.visible { display: block; animation: slideIn .2s ease; }
+    .auth-panel-title {
+      font-size: 11px; font-weight: 700; letter-spacing: 1px;
+      color: var(--blue); margin-bottom: 10px;
+      text-transform: uppercase;
+    }
+    .auth-code-row { display: flex; align-items: center; gap: 12px; margin-bottom: 6px; }
+    .auth-code {
+      font-size: 22px; font-weight: 700; letter-spacing: 4px;
+      color: #fff;
+      background: rgba(0,198,255,.12);
+      border: 1px solid rgba(0,198,255,.35);
+      padding: 8px 16px; border-radius: 5px;
+    }
+    .auth-url { color: var(--blue); font-size: 12px; text-decoration: none; }
+    .auth-url:hover { text-decoration: underline; }
+    .auth-hint { font-size: 11px; color: var(--text-dim); margin-top: 5px; }
+
+    /* ── Controls row ── */
+    .controls {
+      display: flex; flex-wrap: wrap; gap: 8px;
+      padding: 14px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    /* ── Chat row ── */
+    .chat-row {
+      display: flex; gap: 8px;
+      padding: 12px 18px;
+      border-bottom: 1px solid var(--border);
+    }
+    .chat-row input {
+      flex: 1;
+      background: rgba(0,0,0,.3);
+      border: 1px solid var(--border2);
+      color: var(--text);
+      font-family: inherit; font-size: 13px;
+      padding: 8px 12px; border-radius: 5px; outline: none;
+      transition: border-color .2s;
+    }
+    .chat-row input:focus { border-color: var(--green); }
+    .chat-row input::placeholder { color: var(--text-muted); }
+
+    /* ── Log terminal ── */
+    .log-area {
+      height: 260px;
+      overflow-y: auto;
+      padding: 12px 18px;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    .log-area::-webkit-scrollbar { width: 4px; }
+    .log-area::-webkit-scrollbar-track { background: transparent; }
+    .log-area::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+
+    .log-entry {
+      display: flex; gap: 10px;
+      border-bottom: 1px solid rgba(255,255,255,.025);
+      padding: 2px 0;
+      animation: fadeLog .2s ease;
+    }
+    @keyframes fadeLog {
+      from { opacity:0; transform:translateX(-4px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+
+    .log-time { color: var(--text-muted); flex-shrink: 0; width: 80px; }
+    .log-msg  { color: var(--text); word-break: break-word; }
+    .log-msg.chat  { color: #b0d4ff; }
+    .log-msg.error { color: var(--red); }
+    .log-msg.success { color: var(--green); }
+    .log-msg.warn  { color: var(--amber); }
+    .log-msg.auth  { color: var(--blue); }
+    .log-msg.sent  { color: #99ffcc; }
+
+    /* ── Stats bar ── */
+    .stats-bar {
+      display: flex; gap: 20px; align-items: center;
+      padding: 8px 18px;
+      background: rgba(0,0,0,.25);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+    .stat { display: flex; align-items: center; gap: 5px; }
+    .stat-val { color: var(--text-dim); }
+    .stat-val.green { color: var(--green); }
+    .stat-val.amber { color: var(--amber); }
+
+    /* ── Toast ── */
+    .toast-container {
+      position: fixed; bottom: 24px; right: 24px;
+      display: flex; flex-direction: column-reverse; gap: 8px;
+      z-index: 999;
+    }
+    .toast {
+      background: var(--surface);
+      border: 1px solid var(--border2);
+      border-left: 3px solid var(--green);
+      padding: 10px 16px;
+      border-radius: 5px;
+      font-size: 12px;
+      color: var(--text);
+      max-width: 300px;
+      animation: toastIn .25s ease;
+      box-shadow: 0 4px 20px rgba(0,0,0,.5);
+    }
+    .toast.error { border-left-color: var(--red); }
+    .toast.warn  { border-left-color: var(--amber); }
+    @keyframes toastIn {
+      from { opacity:0; transform:translateX(20px); }
+      to   { opacity:1; transform:translateX(0); }
+    }
+  </style>
+</head>
+<body>
+<div class="wrapper">
+
+  <!-- Header -->
+  <div class="header">
+    <div class="header-left">
+      <div class="logo">DONUT<span>BOT</span></div>
+      <div class="server-tag">donutsmp.net</div>
+    </div>
+    <div class="version-tag">bedrock-protocol · MS OAuth · v1.0</div>
+  </div>
+
+  <!-- Connect bar -->
+  <div class="connect-bar">
+    <input
+      id="emailInput"
+      type="text"
+      placeholder="Enter account label (e.g. alt@outlook.com or just 'Alt1')"
+      autocomplete="off"
+    />
+    <button class="btn btn-green" onclick="handleConnect()">
+      <span>⚡</span> Connect
+    </button>
+  </div>
+
+  <!-- Sessions list -->
+  <div class="sessions" id="sessions">
+    <div class="empty-state" id="emptyState">
+      <div class="icon">🍩</div>
+      <p>No active sessions. Enter an account label above and click Connect.</p>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast container -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script>
+  // ─────────────────────────────────────────────
+  //  State
+  // ─────────────────────────────────────────────
+  const sessions = {}; // email -> { status, logs, autoReconnect, reconnectAttempts, deviceCode }
+
+  // ─────────────────────────────────────────────
+  //  SSE
+  // ─────────────────────────────────────────────
+  const es = new EventSource('/events');
+  es.onmessage = (e) => {
+    try {
+      const data = JSON.parse(e.data);
+      if (data.type === 'update') {
+        updateSession(data);
+      }
+    } catch (_) {}
+  };
+  es.onerror = () => console.warn('SSE disconnected, will auto-retry...');
+
+  // Load snapshot on page load
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const res = await fetch('/status');
+      const data = await res.json();
+      for (const [email, info] of Object.entries(data)) {
+        sessions[email] = info;
+        ensureCard(email);
+        renderSession(email);
+      }
+      updateEmptyState();
+    } catch (_) {}
+  });
+
+  // ─────────────────────────────────────────────
+  //  Connect
+  // ─────────────────────────────────────────────
+  async function handleConnect() {
+    const email = document.getElementById('emailInput').value.trim();
+    if (!email) { toast('Enter an account label first.', 'warn'); return; }
+
+    const s = sessions[email];
+    if (s && ['Connecting', 'Online', 'Auth Required'].includes(s.status)) {
+      toast(`${email} is already active.`, 'warn'); return;
+    }
+
+    sessions[email] = { status: 'Connecting', logs: [], autoReconnect: true, reconnectAttempts: 0, deviceCode: null };
+    ensureCard(email);
+    renderSession(email);
+    updateEmptyState();
+
+    try {
+      const res = await fetch('/connect', { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+      if (!res.ok) { const t = await res.text(); toast(t, 'error'); }
+      else toast(`Connecting ${email}...`);
+    } catch (e) { toast('Server error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Disconnect
+  // ─────────────────────────────────────────────
+  async function handleDisconnect(email) {
+    try {
+      await fetch('/disconnect', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email }) });
+      toast(`Disconnected ${email}.`);
+    } catch (e) { toast('Error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Chat
+  // ─────────────────────────────────────────────
+  async function handleChat(email) {
+    const inp = document.getElementById(`chat-${CSS.escape(email)}`);
+    if (!inp) return;
+    const message = inp.value.trim();
+    if (!message) return;
+    inp.value = '';
+
+    try {
+      const res = await fetch(`/chat?email=${encodeURIComponent(email)}&message=${encodeURIComponent(message)}`);
+      if (!res.ok) toast(await res.text(), 'error');
+    } catch (e) { toast('Chat error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Toggle auto-reconnect
+  // ─────────────────────────────────────────────
+  async function toggleReconnect(email, enabled) {
+    try {
+      await fetch('/set-reconnect', {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({ email, enabled })
+      });
+      if (sessions[email]) sessions[email].autoReconnect = enabled;
+    } catch (e) { toast('Error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Test reconnect
+  // ─────────────────────────────────────────────
+  async function handleTestReconnect(email) {
+    try {
+      const res = await fetch('/test-reconnect', {
+        method: 'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) toast(await res.text(), 'error');
+      else toast('⚡ Forced disconnect — watching reconnect...', 'warn');
+    } catch (e) { toast('Error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  SSE update handler
+  // ─────────────────────────────────────────────
+  function updateSession(data) {
+    const { email } = data;
+    if (!sessions[email]) sessions[email] = {};
+
+    const prev = sessions[email];
+    const statusChanged = prev.status !== data.status;
+
+    Object.assign(prev, {
+      status: data.status,
+      autoReconnect: data.autoReconnect,
+      reconnectAttempts: data.reconnectAttempts,
+      deviceCode: data.deviceCode,
+    });
+
+    // Merge new log entries
+    if (data.logs) {
+      for (const entry of data.logs) {
+        const key = entry.time + entry.message;
+        if (!prev._logKeys) prev._logKeys = new Set();
+        if (!prev._logKeys.has(key)) {
+          prev._logKeys.add(key);
+          if (!prev.logs) prev.logs = [];
+          prev.logs.push(entry);
+          if (prev.logs.length > 200) prev.logs.shift();
+        }
+      }
+    }
+
+    ensureCard(email);
+    if (statusChanged) renderSession(email);
+    else patchSession(email);
+    updateEmptyState();
+  }
+
+  // ─────────────────────────────────────────────
+  //  Ensure card exists
+  // ─────────────────────────────────────────────
+  function ensureCard(email) {
+    const id = cardId(email);
+    if (document.getElementById(id)) return;
+
+    const container = document.getElementById('sessions');
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = id;
+    container.appendChild(card);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Full card render
+  // ─────────────────────────────────────────────
+  function renderSession(email) {
+    const s = sessions[email];
+    if (!s) return;
+    const card = document.getElementById(cardId(email));
+    if (!card) return;
+
+    const statusKey = statusToKey(s.status);
+    const isOnline   = s.status === 'Online';
+    const isOffline  = s.status === 'Offline' || !s.status;
+    const isConnecting = s.status === 'Connecting';
+    const isAuth     = s.status === 'Auth Required';
+    const canConnect = isOffline || s.status === 'Error';
+    const canDisconnect = !isOffline;
+    const canChat    = isOnline;
+    const canTestRC  = isOnline;
+
+    const eId = CSS.escape(email);
+
+    card.innerHTML = `
+      <!-- Card header -->
+      <div class="card-header">
+        <div class="card-title">
+          <div class="status-dot ${statusKey}"></div>
+          <div class="account-name">${escHtml(email)}</div>
+          <div class="status-badge badge-${statusKey}">${escHtml(s.status || 'Offline')}</div>
+        </div>
+        <div class="card-header-right">
+          <label class="reconnect-toggle" title="Auto-reconnect">
+            <input type="checkbox" id="ar-${eId}"
+              onchange="toggleReconnect('${escJs(email)}', this.checked)"
+              ${s.autoReconnect ? 'checked' : ''} />
+            <div class="toggle-track"></div>
+            <span>Auto-reconnect</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- Auth panel -->
+      ${isAuth && s.deviceCode ? `
+        <div class="auth-panel visible">
+          <div class="auth-panel-title">🔑 Microsoft Authentication Required</div>
+          <div class="auth-code-row">
+            <div class="auth-code">${escHtml(s.deviceCode.userCode)}</div>
+            <div>
+              <div style="color:var(--text-dim);font-size:11px;margin-bottom:4px;">Visit this URL:</div>
+              <a class="auth-url" href="${escHtml(s.deviceCode.verificationUri)}" target="_blank">${escHtml(s.deviceCode.verificationUri)}</a>
+            </div>
+          </div>
+          <div class="auth-hint">Enter the code above at the URL to authenticate with Microsoft. The client will connect automatically once verified.</div>
+        </div>
+      ` : ''}
+
+      <!-- Controls -->
+      <div class="controls">
+        ${canDisconnect ? `<button class="btn btn-red" onclick="handleDisconnect('${escJs(email)}')">⏹ Disconnect</button>` : ''}
+        ${canConnect    ? `<button class="btn btn-green" onclick="reconnectNow('${escJs(email)}')">▶ Reconnect</button>` : ''}
+        <button class="btn btn-amber" onclick="handleTestReconnect('${escJs(email)}')" ${!canTestRC ? 'disabled' : ''}>⚡ Test Reconnect</button>
+        <button class="btn btn-ghost" onclick="clearLogs('${escJs(email)}')">🗑 Clear Logs</button>
+      </div>
+
+      <!-- Chat -->
+      <div class="chat-row">
+        <input
+          id="chat-${eId}"
+          type="text"
+          placeholder="${canChat ? 'Send a message to the server...' : 'Bot must be online to chat'}"
+          ${!canChat ? 'disabled' : ''}
+          onkeydown="if(event.key==='Enter') handleChat('${escJs(email)}')"
+        />
+        <button class="btn btn-blue" onclick="handleChat('${escJs(email)}')" ${!canChat ? 'disabled' : ''}>
+          ➤ Send
+        </button>
+      </div>
+
+      <!-- Log area -->
+      <div class="log-area" id="log-${eId}"></div>
+
+      <!-- Stats bar -->
+      <div class="stats-bar">
+        <div class="stat">Reconnects: <span class="stat-val ${s.reconnectAttempts > 0 ? 'amber' : ''}">${s.reconnectAttempts}</span></div>
+        <div class="stat">Auto-RC: <span class="stat-val ${s.autoReconnect ? 'green' : ''}">${s.autoReconnect ? 'ON' : 'OFF'}</span></div>
+        <div class="stat">Logs: <span class="stat-val">${(s.logs || []).length}</span></div>
+      </div>
+    `;
+
+    renderLogs(email);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Patch (update log + stats without full re-render)
+  // ─────────────────────────────────────────────
+  function patchSession(email) {
+    const s = sessions[email];
+    if (!s) return;
+    renderLogs(email);
+
+    const eId = CSS.escape(email);
+
+    // Update toggle checkbox
+    const cb = document.getElementById(`ar-${eId}`);
+    if (cb && cb.checked !== s.autoReconnect) cb.checked = s.autoReconnect;
+
+    // Update stats bar
+    const card = document.getElementById(cardId(email));
+    if (!card) return;
+    const statsBar = card.querySelector('.stats-bar');
+    if (statsBar) {
+      statsBar.innerHTML = `
+        <div class="stat">Reconnects: <span class="stat-val ${s.reconnectAttempts > 0 ? 'amber' : ''}">${s.reconnectAttempts}</span></div>
+        <div class="stat">Auto-RC: <span class="stat-val ${s.autoReconnect ? 'green' : ''}">${s.autoReconnect ? 'ON' : 'OFF'}</span></div>
+        <div class="stat">Logs: <span class="stat-val">${(s.logs || []).length}</span></div>
+      `;
+    }
+
+    // Update auth panel
+    const ap = card.querySelector('.auth-panel');
+    if (ap) {
+      if (s.deviceCode && s.status === 'Auth Required') ap.classList.add('visible');
+      else ap.classList.remove('visible');
+    }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Render log entries
+  // ─────────────────────────────────────────────
+  function renderLogs(email) {
+    const s = sessions[email];
+    const logEl = document.getElementById(`log-${CSS.escape(email)}`);
+    if (!logEl || !s?.logs) return;
+
+    const wasAtBottom = logEl.scrollHeight - logEl.clientHeight <= logEl.scrollTop + 20;
+
+    logEl.innerHTML = (s.logs || []).map(e => `
+      <div class="log-entry">
+        <span class="log-time">${escHtml(e.time)}</span>
+        <span class="log-msg ${classifyLog(e.message)}">${escHtml(e.message)}</span>
+      </div>
+    `).join('');
+
+    if (wasAtBottom) logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function classifyLog(msg) {
+    if (!msg) return '';
+    if (msg.includes('✅') || msg.includes('Spawned') || msg.includes('Connected')) return 'success';
+    if (msg.includes('❌') || msg.includes('Error') || msg.includes('error')) return 'error';
+    if (msg.includes('💬') || msg.includes('📤')) return 'chat';
+    if (msg.includes('🔑') || msg.includes('Auth') || msg.includes('code')) return 'auth';
+    if (msg.includes('⚡') || msg.includes('⏱') || msg.includes('🔄') || msg.includes('🔌')) return 'warn';
+    return '';
+  }
+
+  // ─────────────────────────────────────────────
+  //  Clear logs
+  // ─────────────────────────────────────────────
+  function clearLogs(email) {
+    const s = sessions[email];
+    if (s) { s.logs = []; s._logKeys = new Set(); }
+    renderLogs(email);
+  }
+
+  // ─────────────────────────────────────────────
+  //  Manual reconnect (re-connect after offline)
+  // ─────────────────────────────────────────────
+  async function reconnectNow(email) {
+    try {
+      const res = await fetch('/connect', {
+        method: 'POST', headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ email })
+      });
+      if (!res.ok) toast(await res.text(), 'error');
+      else toast(`Reconnecting ${email}...`);
+    } catch (e) { toast('Error: ' + e.message, 'error'); }
+  }
+
+  // ─────────────────────────────────────────────
+  //  Helpers
+  // ─────────────────────────────────────────────
+  function updateEmptyState() {
+    const empty = document.getElementById('emptyState');
+    if (!empty) return;
+    empty.style.display = Object.keys(sessions).length === 0 ? '' : 'none';
+  }
+
+  function cardId(email) {
+    return 'card-' + btoa(unescape(encodeURIComponent(email))).replace(/[^a-z0-9]/gi, '');
+  }
+
+  function statusToKey(status) {
+    switch (status) {
+      case 'Online':       return 'online';
+      case 'Connecting':   return 'connecting';
+      case 'Auth Required':return 'auth';
+      case 'Error':        return 'error';
+      default:             return 'offline';
+    }
+  }
+
+  function escHtml(str) {
+    return String(str ?? '')
+      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+      .replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  function escJs(str) {
+    return String(str ?? '').replace(/\\/g,'\\\\').replace(/'/g,"\\'");
+  }
+
+  // ─────────────────────────────────────────────
+  //  Toast
+  // ─────────────────────────────────────────────
+  function toast(msg, type = 'ok') {
+    const c = document.getElementById('toastContainer');
+    const t = document.createElement('div');
+    t.className = `toast${type === 'error' ? ' error' : type === 'warn' ? ' warn' : ''}`;
+    t.textContent = msg;
+    c.appendChild(t);
+    setTimeout(() => { t.style.opacity = '0'; t.style.transition = 'opacity .4s'; setTimeout(() => t.remove(), 400); }, 4000);
+  }
+
+  // Enter key on email input
+  document.getElementById('emailInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') handleConnect();
+  });
+</script>
+</body>
+</html>
