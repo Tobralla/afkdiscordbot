@@ -2,7 +2,7 @@ const express    = require('express');
 const { createClient } = require('bedrock-protocol');
 const EventEmitter = require('events');
 const path       = require('path');
-const fs         = require('fs');
+
 const {
   Client: DiscordClient,
   GatewayIntentBits,
@@ -11,19 +11,17 @@ const {
 } = require('discord.js');
 
 // ─────────────────────────────────────────────
-//  Config
+//  Config — Railway environment variables
+//  Set these in your Railway service settings:
+//    DISCORD_TOKEN, DISCORD_CLIENT_ID,
+//    DISCORD_GUILD_ID, DISCORD_CHANNEL_ID
 // ─────────────────────────────────────────────
-let config = { discord: {} };
-try {
-  config = JSON.parse(fs.readFileSync(path.join(__dirname, 'config.json'), 'utf8'));
-} catch (_) {
-  console.warn('⚠️  config.json not found or invalid — Discord bot will be disabled.');
-}
+const DISCORD_TOKEN      = process.env.DISCORD_TOKEN;
+const DISCORD_CLIENT_ID  = process.env.DISCORD_CLIENT_ID;
+const DISCORD_GUILD_ID   = process.env.DISCORD_GUILD_ID;
+const DISCORD_CHANNEL_ID = process.env.DISCORD_CHANNEL_ID;
 
-const DISCORD_ENABLED = !!(
-  config.discord?.token &&
-  config.discord.token !== 'YOUR_DISCORD_BOT_TOKEN'
-);
+const DISCORD_ENABLED = !!DISCORD_TOKEN;
 
 // ─────────────────────────────────────────────
 //  Express
@@ -63,7 +61,7 @@ if (DISCORD_ENABLED) {
     discord.user.setActivity('donutsmp.net', { type: ActivityType.Watching });
 
     try {
-      discordChannel = await discord.channels.fetch(config.discord.channelId);
+      discordChannel = await discord.channels.fetch(DISCORD_CHANNEL_ID);
       discordChannel.send({
         embeds: [makeEmbed('🟢 Bot Manager Online', 'DonutSMP bot dashboard is running.', 0x00ff87)],
       }).catch(() => {});
@@ -143,7 +141,7 @@ if (DISCORD_ENABLED) {
     }
   });
 
-  discord.login(config.discord.token).catch(err => {
+  discord.login(DISCORD_TOKEN).catch(err => {
     console.error('❌ Discord login failed:', err.message);
   });
 }
@@ -509,5 +507,5 @@ function scheduleReconnect(email) {
 // ─────────────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`\n  🍩  DonutSMP Bot GUI  ->  http://localhost:${PORT}`);
-  console.log(`  🤖  Discord bot: ${DISCORD_ENABLED ? 'ENABLED' : 'DISABLED (fill in config.json)'}\n`);
+  console.log(`  🤖  Discord bot: ${DISCORD_ENABLED ? 'ENABLED' : 'DISABLED (set DISCORD_TOKEN env var)'}\n`);
 });
