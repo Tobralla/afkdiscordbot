@@ -2,7 +2,12 @@
 //   node register-commands.js
 
 const { REST, Routes, SlashCommandBuilder } = require('discord.js');
-const config = require('./config.json');
+
+// Set these as environment variables or paste temporarily to register:
+//   DISCORD_TOKEN, DISCORD_CLIENT_ID, DISCORD_GUILD_ID
+const DISCORD_TOKEN     = process.env.DISCORD_TOKEN     || 'YOUR_DISCORD_BOT_TOKEN';
+const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || 'YOUR_CLIENT_ID';
+const DISCORD_GUILD_ID  = process.env.DISCORD_GUILD_ID  || 'YOUR_GUILD_ID';
 
 const commands = [
   new SlashCommandBuilder()
@@ -38,13 +43,13 @@ const commands = [
       o.setName('enabled').setDescription('Turn auto-reconnect on or off').setRequired(true)),
 ].map(c => c.toJSON());
 
-const rest = new REST({ version: '10' }).setToken(config.discord.token);
+const rest = new REST({ version: '10' }).setToken(DISCORD_TOKEN);
 
 (async () => {
   try {
     console.log('Registering slash commands...');
     await rest.put(
-      Routes.applicationGuildCommands(config.discord.clientId, config.discord.guildId),
+      Routes.applicationGuildCommands(DISCORD_CLIENT_ID, DISCORD_GUILD_ID),
       { body: commands }
     );
     console.log('✅ Slash commands registered successfully.');
