@@ -48,7 +48,7 @@ const accountData = new Map();
 let discord = null;
 let discordChannel = null;
 
-if (DISCORD_ENABLED) {
+async function initDiscord() {
   discord = new DiscordClient({
     intents: [
       GatewayIntentBits.Guilds,
@@ -141,9 +141,7 @@ if (DISCORD_ENABLED) {
     }
   });
 
-  discord.login(DISCORD_TOKEN).catch(err => {
-    console.error('❌ Discord login failed:', err.message);
-  });
+  await discord.login(DISCORD_TOKEN);
 }
 
 // ─────────────────────────────────────────────
@@ -503,9 +501,15 @@ function scheduleReconnect(email) {
 }
 
 // ─────────────────────────────────────────────
-//  Start Express
+//  Start — Express binds first so Railway health
+//  checks pass, then Discord initialises async
 // ─────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`\n  🍩  DonutSMP Bot GUI  ->  http://localhost:${PORT}`);
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`\n  🍩  DonutSMP Bot GUI  ->  http://0.0.0.0:${PORT}`);
   console.log(`  🤖  Discord bot: ${DISCORD_ENABLED ? 'ENABLED' : 'DISABLED (set DISCORD_TOKEN env var)'}\n`);
+
+  // Start Discord AFTER Express is bound so a Discord crash can't block the port
+  if (DISCORD_ENABLED) {
+    initDiscord().catch(err => console.error('Discord init failed:', err.message));
+  }
 });
